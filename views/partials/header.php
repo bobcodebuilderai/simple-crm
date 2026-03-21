@@ -64,6 +64,14 @@
                        class="hover:text-blue-200 <?= isCurrentPath('/tasks') ? 'font-bold' : '' ?>">
                         Oppgaver
                     </a>
+                    
+                    <!-- User Menu -->
+                    <?php if (isset($_SESSION['user_id'])): ?>
+                        <div class="flex items-center space-x-4 ml-4 border-l border-blue-500 pl-4">
+                            <span class="text-sm"><?= e($_SESSION['full_name'] ?? $_SESSION['username']) ?></span>
+                            <a href="<?= APP_URL ?>/auth/logout" class="text-sm hover:text-blue-200">Logg ut</a>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

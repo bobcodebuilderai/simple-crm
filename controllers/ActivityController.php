@@ -12,10 +12,12 @@ class ActivityController {
         require_once __DIR__ . '/../models/Activity.php';
         require_once __DIR__ . '/../models/Customer.php';
         require_once __DIR__ . '/../models/Contact.php';
+        require_once __DIR__ . '/../models/Attachment.php';
         
         $this->activityModel = new Activity();
         $this->customerModel = new Customer();
         $this->contactModel = new Contact();
+        $this->attachmentModel = new Attachment();
     }
     
     /**
@@ -53,6 +55,9 @@ class ActivityController {
             setFlashMessage('error', 'Aktivitet ikke funnet');
             redirect(APP_URL . '/customers');
         }
+        
+        // Get attachments
+        $attachments = $this->attachmentModel->getByActivity($id);
         
         $pageTitle = $activity['title'];
         require __DIR__ . '/../views/activities/view.php';
@@ -96,6 +101,40 @@ class ActivityController {
                 }
                 
                 $activityId = $this->activityModel->create($data);
+                
+                // Handle file uploads
+                if (!empty($_FILES['attachments']['name'][0])) {
+                    $fileCount = count($_FILES['attachments']['name']);
+                    
+                    for ($i = 0; $i < $fileCount; $i++) {
+                        $file = [
+                            'name' => $_FILES['attachments']['name'][$i],
+                            'type' => $_FILES['attachments']['type'][$i],
+                            'tmp_name' => $_FILES['attachments']['tmp_name'][$i],
+                            'error' => $_FILES['attachments']['error'][$i],
+                            'size' => $_FILES['attachments']['size'][$i]
+                        ];
+                        
+                        // Skip if no file
+                        if ($file['error'] === UPLOAD_ERR_NO_FILE) {
+                            continue;
+                        }
+                        
+                        // Validate file
+                        $errors = $this->attachmentModel->validateFile($file);
+                        if (!empty($errors)) {
+                            setFlashMessage('warning', 'Fil "' . $file['name'] . '": ' . implode(', ', $errors));
+                            continue;
+                        }
+                        
+                        // Upload file
+                        try {
+                            $this->attachmentModel->uploadFile($file, $activityId);
+                        } catch (Exception $e) {
+                            setFlashMessage('warning', 'Kunne ikke laste opp "' . $file['name'] . '": ' . $e->getMessage());
+                        }
+                    }
+                }
                 
                 setFlashMessage('success', 'Aktivitet registrert');
                 redirect(APP_URL . '/customers/view/' . $customerId);
@@ -187,6 +226,72 @@ class ActivityController {
         }
         
         redirect(APP_URL . '/customers/view/' . $activity['customer_id']);
+    }
+    
+    /**
+     * Download attachment
+     */
+    public function downloadAttachment($id) {
+        if (!$id) {
+            setFlashMessage('error', 'Vedlegg ID mangler');
+            redirect(APP_URL . '/customers');
+        }
+        
+        $attachment = $this->attachmentModel->getById($id);
+        
+        if (!$attachment) {
+            setFlashMessage('error', 'Vedlegg ikke funnet');
+            redirect(APP_URL . '/customers');
+        }
+        
+        $filePath = UPLOAD_DIR . $attachment['file_path'];
+        
+        if (!file_exists($filePath)) {
+            setFlashMessage('error', 'Filen finnes ikke');
+            redirect(APP_URL . '/activities/view/' . $attachment['activity_id']);
+        }
+        
+        // Set headers for download
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename="' . $attachment['original_name'] . '"');
+        header('Content-Length: ' . $attachment['file_size']);
+        header('Cache-Control: no-cache, must-revalidate');
+        
+        readfile($filePath);
+        exit;
+    }
+    
+    /**
+     * Delete attachment
+     */
+    public function deleteAttachment($id) {
+        if (!$id) {
+            setFlashMessage('error', 'Vedlegg ID mangler');
+            redirect(APP_URL . '/customers');
+        }
+        
+        $attachment = $this->attachmentModel->getById($id);
+        
+        if (!$attachment) {
+            setFlashMessage('error', 'Vedlegg ikke funnet');
+            redirect(APP_URL . '/customers');
+        }
+        
+        $activityId = $attachment['activity_id'];
+        
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            try {
+                validateCsrfToken($_POST['csrf_token'] ?? '');
+                
+                $this->attachmentModel->delete($id);
+                setFlashMessage('success', 'Vedlegg slettet');
+                
+            } catch (Exception $e) {
+                setFlashMessage('error', 'Kunne ikke slette: ' . $e->getMessage());
+            }
+        }
+        
+        redirect(APP_URL . '/activities/view/' . $activityId);
     }
 }
 

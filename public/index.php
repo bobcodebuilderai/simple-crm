@@ -26,6 +26,10 @@ $id = $parts[2] ?? null;
 
 // Route mapping
 $routes = [
+    // Auth
+    'auth/login' => ['controller' => 'AuthController', 'action' => 'login'],
+    'auth/logout' => ['controller' => 'AuthController', 'action' => 'logout'],
+    'auth/changePassword' => ['controller' => 'AuthController', 'action' => 'changePassword'],
     // Dashboard
     'dashboard' => ['controller' => 'DashboardController', 'action' => 'index'],
     
@@ -50,6 +54,8 @@ $routes = [
     'activities/create' => ['controller' => 'ActivityController', 'action' => 'create'],
     'activities/edit' => ['controller' => 'ActivityController', 'action' => 'edit'],
     'activities/delete' => ['controller' => 'ActivityController', 'action' => 'delete'],
+    'activities/downloadAttachment' => ['controller' => 'ActivityController', 'action' => 'downloadAttachment'],
+    'activities/deleteAttachment' => ['controller' => 'ActivityController', 'action' => 'deleteAttachment'],
     
     // Projects
     'projects' => ['controller' => 'ProjectController', 'action' => 'list'],
@@ -91,6 +97,18 @@ if (isset($routes[$routeKey])) {
     $controllerName = 'DashboardController';
     $actionName = 'index';
 }
+
+// Check authentication (skip for login/logout)
+$publicRoutes = ['AuthController'];
+if (!in_array($controllerName, $publicRoutes) && !isset($_SESSION['user_id'])) {
+    setFlashMessage('error', 'Du må logge inn for å se denne siden');
+    redirect(APP_URL . '/auth/login');
+}
+
+// Create default user if no users exist (first time setup)
+require_once __DIR__ . '/../models/User.php';
+$userModel = new User();
+$userModel->createDefaultUser();
 
 // Load controller file
 $controllerFile = __DIR__ . '/../controllers/' . $controllerName . '.php';
