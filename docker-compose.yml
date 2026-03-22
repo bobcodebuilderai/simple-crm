@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  app:
+    image: php:8.1-apache
+    container_name: simple-crm-app
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/php.ini:/usr/local/etc/php/php.ini
+    environment:
+      - DB_HOST=db
+      - DB_NAME=simple_crm
+      - DB_USER=crm_user
+      - DB_PASS=crm_password
+    depends_on:
+      - db
+    command: >
+      bash -c "
+        docker-php-ext-install mysqli pdo pdo_mysql &&
+        apachectl -D FOREGROUND
+      "
+
+  db:
+    image: mysql:8.0
+    container_name: simple-crm-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: simple_crm
+      MYSQL_USER: crm_user
+      MYSQL_PASSWORD: crm_password
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    ports:
+      - "3306:3306"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: simple-crm-phpmyadmin
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+    ports:
+      - "8081:80"
+    depends_on:
+      - db
+
+volumes:
+  db_data:
