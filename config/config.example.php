@@ -34,10 +34,8 @@ define('ALLOWED_MIME_TYPES', [
 // BRREG API settings
 define('BRREG_API_URL', 'https://data.brreg.no/enhetsregisteret/api/enheter/');
 
-// Session settings
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_only_cookies', 1);
-ini_set('session.cookie_secure', 0); // Set to 1 if using HTTPS
+// Session settings are set in index.php BEFORE session_start()
+// Do NOT set session ini settings here
 
 // Timezone
 date_default_timezone_set('Europe/Oslo');
