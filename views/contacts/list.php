@@ -13,7 +13,7 @@
         </div\>
         
         <div class="flex space-x-3"\>
-            <a href="<?= APP_URL ?\>/contacts/create?customer_id=<?= e($customer['id']) ?\>" 
+            <a href="<?= APP_URL ?\>/contacts/create?customer_id=<?= e($customer['customer_id']) ?\>" 
                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"\>
                 + Ny kontaktperson
             </a\>
@@ -84,7 +84,7 @@
     <?php endif; ?\>
     
     <div class="mt-6"\>
-        <a href="<?= APP_URL ?\>/customers/view/<?= e($customer['id']) ?\>" 
+        <a href="<?= APP_URL ?\>/customers/view/<?= e($customer['customer_id']) ?\>" 
            class="text-blue-600 hover:underline"\>
             ← Tilbake til kunde
         </a\>

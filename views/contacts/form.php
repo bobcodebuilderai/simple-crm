@@ -10,7 +10,7 @@
     
     <form method="POST" class="space-y-4"\>
         <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?\>"\>
-        <input type="hidden" name="customer_id" value="<?= e($customer['id']) ?\>"\>
+        <input type="hidden" name="customer_id" value="<?= e($customer['customer_id']) ?\>"\>
         
         <div class="grid grid-cols-2 gap-4"\>
             <div\>
@@ -74,7 +74,7 @@
         </div\>
         
         <div class="flex justify-between pt-4"\>
-            <a href="<?= APP_URL ?\>/customers/view/<?= e($customer['id']) ?\>" 
+            <a href="<?= APP_URL ?\>/customers/view/<?= e($customer['customer_id']) ?\>" 
                class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"\>
                 Avbryt
             </a\>
