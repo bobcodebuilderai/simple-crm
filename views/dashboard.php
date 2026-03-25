@@ -3,7 +3,7 @@
  * Dashboard View
  */
 
-require __DIR__ . '/../partials/header.php';
+require __DIR__ . '/partials/header.php';
 
 // Get statistics
 require_once __DIR__ . '/../../models/Customer.php';
@@ -150,4 +150,4 @@ $upcomingTasks = $taskModel->getOpenTasks(5);
     </div>
 </div>
 
-<?php require __DIR__ . '/../partials/footer.php'; ?>
+<?php require __DIR__ . '/partials/footer.php'; ?>
